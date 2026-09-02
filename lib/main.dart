@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/add_expense_screen.dart';
 import 'screens/settings_screen.dart';
@@ -20,19 +21,57 @@ class PocketLedgerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
-      builder: (_, ThemeMode currentMode, __) {
+      builder: (_, ThemeMode currentMode, child) {
         return MaterialApp(
           title: 'PocketLedger',
           debugShowCheckedModeBanner: false,
+          themeMode: currentMode,
           theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal, brightness: Brightness.light),
             useMaterial3: true,
+            scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+            colorScheme: ColorScheme.fromSeed(
+              brightness: Brightness.light,
+              seedColor: const Color(0xFF2563EB),
+              primary: const Color(0xFF2563EB),
+              secondary: const Color(0xFF059669),
+              surface: Colors.white,
+            ),
+            textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              iconTheme: IconThemeData(color: Color(0xFF0F172A)),
+              titleTextStyle: TextStyle(
+                color: Color(0xFF0F172A),
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
           darkTheme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal, brightness: Brightness.dark),
             useMaterial3: true,
+            scaffoldBackgroundColor: const Color(0xFF0F172A),
+            colorScheme: ColorScheme.fromSeed(
+              brightness: Brightness.dark,
+              seedColor: const Color(0xFF3B82F6),
+              primary: const Color(0xFF3B82F6),
+              secondary: const Color(0xFF10B981),
+              surface: const Color(0xFF1E293B),
+            ),
+            textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              iconTheme: IconThemeData(color: Colors.white),
+              titleTextStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
-          themeMode: currentMode,
           initialRoute: '/',
           routes: {
             '/': (context) => const DashboardScreen(),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../models/expense.dart';
 import '../services/storage_service.dart';
 import 'expense_detail_screen.dart';
@@ -56,18 +57,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? null : Colors.grey[100],
       appBar: AppBar(
         title: const Text(
           'PocketLedger',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(letterSpacing: -0.5),
         ),
         centerTitle: true,
         actions: [
           PopupMenuButton<SortOption>(
-            icon: const Icon(Icons.sort),
+            icon: const Icon(Icons.tune),
             onSelected: (option) {
               setState(() => _currentSort = option);
               _loadExpenses();
@@ -79,16 +78,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const PopupMenuItem(
                 value: SortOption.highest,
-                child: Text('Sort by Highest Amount'),
+                child: Text('Sort by Highest'),
               ),
               const PopupMenuItem(
                 value: SortOption.lowest,
-                child: Text('Sort by Lowest Amount'),
+                child: Text('Sort by Lowest'),
               ),
             ],
           ),
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_outlined),
             onPressed: () async {
               await Navigator.pushNamed(context, '/settings');
               _loadExpenses();
@@ -98,33 +97,114 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                _buildAnalyticsSection(),
-                Expanded(child: _buildExpensesList()),
+          : CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _buildSummaryCard()),
+                SliverToBoxAdapter(child: _buildAnalyticsSection()),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  sliver: SliverToBoxAdapter(
+                    child: Text(
+                      'Recent Transactions',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ),
+                ),
+                if (_expenses.isEmpty)
+                  SliverFillRemaining(child: _buildEmptyState())
+                else
+                  _buildExpensesList(),
               ],
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await Navigator.pushNamed(context, '/add');
-          _loadExpenses();
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Add Expense'),
-      ),
+      floatingActionButton:
+          FloatingActionButton(
+            elevation: 4,
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/add');
+              _loadExpenses();
+            },
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Colors.white,
+            child: const Icon(Icons.add, size: 28),
+          ).animate().scale(
+            delay: 400.ms,
+            duration: 400.ms,
+            curve: Curves.easeOutBack,
+          ),
     );
+  }
+
+  Widget _buildSummaryCard() {
+    return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.secondary,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.primary.withAlpha(80),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'TOTAL BALANCE',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '\$${_totalSpent.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 44,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1.0,
+                ),
+              ),
+            ],
+          ),
+        )
+        .animate()
+        .fadeIn(duration: 500.ms)
+        .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
   }
 
   Widget _buildAnalyticsSection() {
     if (_expenses.isEmpty) return const SizedBox();
 
     final colors = [
-      Colors.teal,
-      Colors.orange,
-      Colors.blue,
-      Colors.purple,
-      Colors.red,
-      Colors.green,
+      const Color(0xFF3B82F6),
+      const Color(0xFF10B981),
+      const Color(0xFFF59E0B),
+      const Color(0xFFEF4444),
+      const Color(0xFF8B5CF6),
+      const Color(0xFFEC4899),
     ];
     int colorIndex = 0;
     final pieSections = _categoryTotals.entries.map((entry) {
@@ -133,114 +213,126 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return PieChartSectionData(
         value: entry.value,
         color: color,
-        title: '${entry.key}\n\$${entry.value.toStringAsFixed(0)}',
-        radius: 60,
+        title: entry.key,
+        radius: 40,
         titleStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
           color: Colors.white,
         ),
       );
     }).toList();
 
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).shadowColor.withAlpha(25),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
+      height: 160,
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: PieChart(
+        PieChartData(
+          sections: pieSections,
+          centerSpaceRadius: 40,
+          sectionsSpace: 4,
+        ),
       ),
-      child: Column(
-        children: [
-          Text(
-            'Total Spent',
-            style: TextStyle(
-              color: Theme.of(context).textTheme.bodySmall?.color,
-              fontSize: 16,
-            ),
-          ),
-          Text(
-            '\$${_totalSpent.toStringAsFixed(2)}',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 200,
-            child: PieChart(
-              PieChartData(
-                sections: pieSections,
-                centerSpaceRadius: 40,
-                sectionsSpace: 2,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    ).animate().fadeIn(delay: 200.ms, duration: 600.ms);
   }
 
   Widget _buildExpensesList() {
-    if (_expenses.isEmpty) {
-      return _buildEmptyState();
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: _expenses.length,
-      itemBuilder: (context, index) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate((context, index) {
         final expense = _expenses[index];
-        return Card(
-          elevation: 2,
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 8,
-            ),
-            leading: CircleAvatar(
-              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-              child: Icon(
-                Icons.receipt,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            title: Text(
-              expense.title,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text(
-              '${expense.category} • ${expense.date.year}-${expense.date.month.toString().padLeft(2, '0')}-${expense.date.day.toString().padLeft(2, '0')}',
-            ),
-            trailing: Text(
-              '\$${expense.amount.toStringAsFixed(2)}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ExpenseDetailScreen(expense: expense),
-                ),
-              );
-              _loadExpenses();
-            },
-          ),
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+          child:
+              InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ExpenseDetailScreen(expense: expense),
+                        ),
+                      );
+                      _loadExpenses();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Theme.of(
+                            context,
+                          ).dividerColor.withAlpha(isDark ? 30 : 15),
+                        ),
+                        boxShadow: [
+                          if (!isDark)
+                            BoxShadow(
+                              color: Colors.black.withAlpha(5),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withAlpha(isDark ? 40 : 25),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.receipt_long,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  expense.title,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${expense.category} • ${expense.date.year}-${expense.date.month.toString().padLeft(2, '0')}-${expense.date.day.toString().padLeft(2, '0')}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall?.color,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            '-\$${expense.amount.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                  .animate(delay: (50 * index).ms)
+                  .fadeIn(duration: 400.ms)
+                  .slideX(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
         );
-      },
+      }, childCount: _expenses.length),
     );
   }
 
@@ -252,24 +344,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Icon(
             Icons.account_balance_wallet_outlined,
             size: 80,
-            color: Colors.grey[400],
+            color: Theme.of(context).dividerColor,
           ),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             'No expenses yet',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
-            'Tap + to add your first expense',
-            style: TextStyle(fontSize: 16, color: Colors.grey[500]),
+            'Tap + to add your first transaction',
+            style: TextStyle(
+              fontSize: 15,
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            ),
           ),
         ],
       ),
-    );
+    ).animate().fadeIn(delay: 300.ms);
   }
 }
