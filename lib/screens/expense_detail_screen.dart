@@ -70,7 +70,6 @@ class ExpenseDetailScreen extends StatelessWidget {
                           );
                         },
                       ),
-                      ),
                       const SizedBox(height: 8),
                       Text(
                         '${e.date.year}-${e.date.month.toString().padLeft(2, '0')}-${e.date.day.toString().padLeft(2, '0')} • ${e.category}',
