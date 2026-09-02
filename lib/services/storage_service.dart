@@ -36,4 +36,13 @@ class StorageService {
   Future<void> clearAll() async {
     await _prefs.remove(_keyExpenses);
   }
+
+  Future<bool> getThemeMode() async {
+    final bool? isDark = await _prefs.getBool('is_dark_mode');
+    return isDark ?? false;
+  }
+
+  Future<void> setThemeMode(bool isDark) async {
+    await _prefs.setBool('is_dark_mode', isDark);
+  }
 }
