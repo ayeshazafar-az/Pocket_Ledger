@@ -19,6 +19,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Expense> _expenses = [];
   bool _isLoading = true;
   SortOption _currentSort = SortOption.latest;
+  String _userName = 'User';
+  double _initialBalance = 0.0;
 
   @override
   void initState() {
@@ -38,8 +40,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       expenses.sort((a, b) => a.amount.compareTo(b.amount));
     }
 
+    final profile = await _storageService.getUserProfile();
+
     setState(() {
       _expenses = expenses;
+      _userName = profile['name'] as String;
+      _initialBalance = profile['initialBalance'] as double;
       _isLoading = false;
     });
   }
@@ -59,10 +65,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'PocketLedger',
-          style: TextStyle(letterSpacing: -0.5),
-        ),
+        title: Text('Hello, $_userName', style: TextStyle(letterSpacing: -0.5)),
         centerTitle: true,
         actions: [
           PopupMenuButton<SortOption>(
@@ -125,18 +128,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
       floatingActionButton:
-          FloatingActionButton(
-            elevation: 4,
-            onPressed: () async {
-              await Navigator.pushNamed(context, '/add');
-              _loadExpenses();
-            },
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Colors.white,
-            child: const Icon(Icons.add, size: 28),
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.secondary,
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withAlpha(100),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: FloatingActionButton(
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              onPressed: () async {
+                await Navigator.pushNamed(context, '/add');
+                _loadExpenses();
+              },
+              child: const Icon(Icons.add, size: 32),
+            ),
           ).animate().scale(
-            delay: 400.ms,
-            duration: 400.ms,
+            delay: 500.ms,
+            duration: 500.ms,
             curve: Curves.easeOutBack,
           ),
     );
@@ -146,53 +167,120 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
           width: double.infinity,
           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(32),
             gradient: LinearGradient(
               colors: [
                 Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.secondary,
+                Theme.of(context).colorScheme.primary.withRed(150),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.primary.withAlpha(80),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                color: Theme.of(context).colorScheme.primary.withAlpha(100),
+                blurRadius: 32,
+                offset: const Offset(0, 16),
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'TOTAL BALANCE',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.5,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(32),
+            child: Stack(
+              children: [
+                // Decorative background circles for premium card feel
+                Positioned(
+                  right: -50,
+                  top: -50,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(20),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '\$${_totalSpent.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 44,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -1.0,
+                Positioned(
+                  left: -30,
+                  bottom: -40,
+                  child: Container(
+                    width: 140,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(20),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'TOTAL BALANCE',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 2.0,
+                            ),
+                          ),
+                          Icon(
+                            Icons.contactless_outlined,
+                            color: Colors.white.withAlpha(150),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        '\$${_totalSpent.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 48,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(40),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              '**** 4921',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         )
         .animate()
-        .fadeIn(duration: 500.ms)
-        .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
+        .fadeIn(duration: 600.ms, curve: Curves.easeOut)
+        .slideY(begin: 0.1, end: 0, curve: Curves.easeOutBack)
+        .shimmer(delay: 1000.ms, duration: 1500.ms, color: Colors.white24);
   }
 
   Widget _buildAnalyticsSection() {
@@ -261,19 +349,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: Theme.of(
-                            context,
-                          ).dividerColor.withAlpha(isDark ? 30 : 15),
+                          color: isDark
+                              ? Colors.white.withAlpha(15)
+                              : Colors.black.withAlpha(10),
+                          width: 1.5,
                         ),
                         boxShadow: [
-                          if (!isDark)
-                            BoxShadow(
-                              color: Colors.black.withAlpha(5),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
+                          BoxShadow(
+                            color: Theme.of(
+                              context,
+                            ).shadowColor.withAlpha(isDark ? 30 : 20),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
                         ],
                       ),
                       child: Row(

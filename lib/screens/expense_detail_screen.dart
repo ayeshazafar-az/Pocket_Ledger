@@ -27,12 +27,23 @@ class ExpenseDetailScreen extends StatelessWidget {
           children: [
             Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(40),
                   decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest.withAlpha(50),
-                    borderRadius: BorderRadius.circular(24),
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border.all(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withAlpha(20)
+                          : Colors.black.withAlpha(10),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).shadowColor.withAlpha(20),
+                        blurRadius: 30,
+                        offset: const Offset(0, 15),
+                      ),
+                    ],
                   ),
                   child: Column(
                     children: [
@@ -73,30 +84,55 @@ class ExpenseDetailScreen extends StatelessWidget {
                   curve: Curves.easeOutQuad,
                 ),
             const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  foregroundColor: Theme.of(context).colorScheme.onError,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+            Container(
+                  width: double.infinity,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFF3B30), Color(0xFFD32F2F)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFF3B30).withAlpha(80),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                ),
-                onPressed: () async {
-                  await StorageService().deleteExpense(e.id);
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                  }
-                },
-                icon: const Icon(Icons.delete_outline, size: 24),
-                label: const Text(
-                  'Delete Transaction',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                ),
-              ),
-            ).animate().fadeIn(delay: 200.ms),
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    onPressed: () async {
+                      await StorageService().deleteExpense(e.id);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      size: 24,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'Delete Transaction',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                )
+                .animate()
+                .fadeIn(delay: 300.ms)
+                .slideY(begin: 0.2, end: 0, curve: Curves.easeOutBack),
           ],
         ),
       ),

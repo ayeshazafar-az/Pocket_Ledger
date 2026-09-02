@@ -4,6 +4,9 @@ import '../models/expense.dart';
 
 class StorageService {
   static const String _keyExpenses = 'expenses_list';
+  static const String _keyUserName = 'user_name';
+  static const String _keyInitialBalance = 'initial_balance';
+  static const String _keyProfileSetup = 'is_profile_setup';
 
   Future<List<Expense>> getExpenses() async {
     final prefs = await SharedPreferences.getInstance();
@@ -48,5 +51,25 @@ class StorageService {
   Future<void> setThemeMode(bool isDark) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_dark_mode', isDark);
+  }
+
+  Future<bool> isProfileSetup() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyProfileSetup) ?? false;
+  }
+
+  Future<void> saveUserProfile(String name, double balance) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyUserName, name);
+    await prefs.setDouble(_keyInitialBalance, balance);
+    await prefs.setBool(_keyProfileSetup, true);
+  }
+
+  Future<Map<String, dynamic>> getUserProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'name': prefs.getString(_keyUserName) ?? 'User',
+      'initialBalance': prefs.getDouble(_keyInitialBalance) ?? 0.0,
+    };
   }
 }
