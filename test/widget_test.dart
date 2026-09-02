@@ -3,7 +3,7 @@ import 'package:pocket_ledger/main.dart';
 
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const PocketLedgerApp(isSetup: true));
+    await tester.pumpWidget(const PocketLedgerApp(initialRoute: '/welcome'));
     expect(find.text('PocketLedger'), findsOneWidget);
   });
 }

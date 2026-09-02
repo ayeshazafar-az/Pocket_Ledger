@@ -21,6 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   SortOption _currentSort = SortOption.latest;
   String _userName = 'User';
   double _initialBalance = 0.0;
+  String _currency = '\$';
 
   @override
   void initState() {
@@ -46,6 +47,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _expenses = expenses;
       _userName = profile['name'] as String;
       _initialBalance = profile['initialBalance'] as double;
+      _currency = profile['currency'] as String;
       _isLoading = false;
     });
   }
@@ -223,7 +225,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            'TOTAL BALANCE',
+                            'CURRENT BALANCE',
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
@@ -239,7 +241,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        '\$${_totalSpent.toStringAsFixed(2)}',
+                        '$_currency${(_initialBalance - _totalSpent).toStringAsFixed(2)}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 48,
@@ -408,7 +410,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           ),
                           Text(
-                            '-\$${expense.amount.toStringAsFixed(2)}',
+                            '-$_currency${expense.amount.toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontWeight: FontWeight.w800,
                               fontSize: 16,

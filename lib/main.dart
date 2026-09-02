@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/welcome_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/add_expense_screen.dart';
 import 'screens/settings_screen.dart';
@@ -11,14 +12,21 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final storage = StorageService();
   final isDark = await storage.getThemeMode();
-  final isSetup = await storage.isProfileSetup();
+  final hasAccount = await storage.hasAccount();
+  final isLoggedIn = await storage.isLoggedIn();
   themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
-  runApp(PocketLedgerApp(isSetup: isSetup));
+
+  String initialRoute = '/welcome';
+  if (hasAccount) {
+    initialRoute = isLoggedIn ? '/dashboard' : '/login';
+  }
+
+  runApp(PocketLedgerApp(initialRoute: initialRoute));
 }
 
 class PocketLedgerApp extends StatelessWidget {
-  final bool isSetup;
-  const PocketLedgerApp({super.key, required this.isSetup});
+  final String initialRoute;
+  const PocketLedgerApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -85,9 +93,10 @@ class PocketLedgerApp extends StatelessWidget {
               ),
             ),
           ),
-          initialRoute: isSetup ? '/dashboard' : '/welcome',
+          initialRoute: initialRoute,
           routes: {
             '/welcome': (context) => const WelcomeScreen(),
+            '/login': (context) => const LoginScreen(),
             '/dashboard': (context) => const DashboardScreen(),
             '/add': (context) => const AddExpenseScreen(),
             '/settings': (context) => const SettingsScreen(),

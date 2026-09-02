@@ -2,47 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../services/storage_service.dart';
 
-class WelcomeScreen extends StatefulWidget {
-  const WelcomeScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<WelcomeScreen> createState() => _WelcomeScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _WelcomeScreenState extends State<WelcomeScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _nameController = TextEditingController();
-  final _balanceController = TextEditingController();
-  String _selectedCurrency = '\$';
-  bool _isSaving = false;
-
-  final List<String> _currencies = ['\$', '€', '£', '₹', '¥'];
+  bool _isLoading = false;
+  String? _errorMsg;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _nameController.dispose();
-    _balanceController.dispose();
     super.dispose();
   }
 
-  Future<void> _completeSetup() async {
+  Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isSaving = true);
+    setState(() {
+      _isLoading = true;
+      _errorMsg = null;
+    });
 
-    await StorageService().registerAndSetup(
+    final success = await StorageService().login(
       _emailController.text.trim(),
       _passwordController.text.trim(),
-      _nameController.text.trim(),
-      double.parse(_balanceController.text.trim()),
-      _selectedCurrency,
     );
 
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
+    if (success) {
+      if (mounted) Navigator.pushReplacementNamed(context, '/dashboard');
+    } else {
+      setState(() {
+        _isLoading = false;
+        _errorMsg = 'Invalid email or password';
+      });
     }
   }
 
@@ -88,7 +87,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 children:
                     [
                           Icon(
-                            Icons.account_balance_wallet_rounded,
+                            Icons.lock_person_outlined,
                             size: 80,
                             color: Theme.of(context).colorScheme.primary,
                           ).animate().scale(
@@ -98,7 +97,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           ),
                           const SizedBox(height: 32),
                           const Text(
-                            'Create Account',
+                            'Welcome Back',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 32,
@@ -108,15 +107,36 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ),
                           ),
                           const SizedBox(height: 48),
+                          if (_errorMsg != null)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              margin: const EdgeInsets.only(bottom: 24),
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.errorContainer,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                _errorMsg!,
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onErrorContainer,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                           TextFormField(
                             controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
                             decoration: inputDecoration.copyWith(
                               hintText: 'Email Address',
                               prefixIcon: const Icon(Icons.email_outlined),
                             ),
-                            validator: (v) => (v == null || v.trim().isEmpty)
-                                ? 'Required'
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) =>
+                                (value == null || value.trim().isEmpty)
+                                ? 'Please enter your email'
                                 : null,
                           ),
                           const SizedBox(height: 20),
@@ -127,73 +147,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               hintText: 'Password',
                               prefixIcon: const Icon(Icons.lock_outline),
                             ),
-                            validator: (v) => (v == null || v.trim().isEmpty)
-                                ? 'Required'
+                            validator: (value) =>
+                                (value == null || value.trim().isEmpty)
+                                ? 'Please enter your password'
                                 : null,
-                          ),
-                          const SizedBox(height: 20),
-                          TextFormField(
-                            controller: _nameController,
-                            decoration: inputDecoration.copyWith(
-                              hintText: 'Display Name',
-                              prefixIcon: const Icon(Icons.person_outline),
-                            ),
-                            validator: (v) => (v == null || v.trim().isEmpty)
-                                ? 'Required'
-                                : null,
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: DropdownButtonFormField<String>(
-                                  value: _selectedCurrency,
-                                  decoration: inputDecoration,
-                                  items: _currencies
-                                      .map(
-                                        (c) => DropdownMenuItem(
-                                          value: c,
-                                          child: Text(
-                                            c,
-                                            style: const TextStyle(
-                                              fontSize: 20,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: (val) {
-                                    if (val != null)
-                                      setState(() => _selectedCurrency = val);
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                flex: 5,
-                                child: TextFormField(
-                                  controller: _balanceController,
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
-                                  decoration: inputDecoration.copyWith(
-                                    hintText: 'Initial Balance',
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  validator: (v) {
-                                    if (v == null || v.isEmpty) return '*';
-                                    if (double.tryParse(v) == null)
-                                      return 'Invalid';
-                                    return null;
-                                  },
-                                ),
-                              ),
-                            ],
                           ),
                           const SizedBox(height: 48),
                           Container(
@@ -218,7 +175,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               ],
                             ),
                             child: ElevatedButton(
-                              onPressed: _isSaving ? null : _completeSetup,
+                              onPressed: _isLoading ? null : _login,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
                                 shadowColor: Colors.transparent,
@@ -226,12 +183,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                               ),
-                              child: _isSaving
+                              child: _isLoading
                                   ? const CircularProgressIndicator(
                                       color: Colors.white,
                                     )
                                   : const Text(
-                                      'Sign Up',
+                                      'Secure Login',
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w800,
@@ -242,7 +199,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ),
                           ),
                         ]
-                        .animate(interval: 50.ms)
+                        .animate(interval: 100.ms)
                         .fadeIn(duration: 500.ms)
                         .slideY(begin: 0.1, end: 0, curve: Curves.easeOut),
               ),

@@ -23,6 +23,23 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.logout, color: Colors.orange),
+            title: const Text(
+              'Logout',
+              style: TextStyle(
+                color: Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: const Text('Securely end your session'),
+            onTap: () async {
+              await StorageService().setLoggedIn(false);
+              if (context.mounted)
+                Navigator.pushReplacementNamed(context, '/login');
+            },
+          ),
+          const Divider(),
+          ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
             title: const Text(
               'Clear All Data',

@@ -56,13 +56,20 @@ class ExpenseDetailScreen extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
-                      Text(
-                        '-\$${e.amount.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w800,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                      FutureBuilder<Map<String, dynamic>>(
+                        future: StorageService().getUserProfile(),
+                        builder: (context, snapshot) {
+                          final currency = snapshot.data?['currency'] ?? '\$';
+                          return Text(
+                            '-$currency${e.amount.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontSize: 48,
+                              fontWeight: FontWeight.w800,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          );
+                        },
+                      ),
                       ),
                       const SizedBox(height: 8),
                       Text(

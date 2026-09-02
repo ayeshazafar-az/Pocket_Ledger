@@ -6,13 +6,15 @@ class StorageService {
   static const String _keyExpenses = 'expenses_list';
   static const String _keyUserName = 'user_name';
   static const String _keyInitialBalance = 'initial_balance';
-  static const String _keyProfileSetup = 'is_profile_setup';
+  static const String _keyCurrency = 'currency_symbol';
+  static const String _keyEmail = 'auth_email';
+  static const String _keyPassword = 'auth_password';
+  static const String _keyIsLoggedIn = 'is_logged_in';
 
   Future<List<Expense>> getExpenses() async {
     final prefs = await SharedPreferences.getInstance();
     final String? expensesJson = prefs.getString(_keyExpenses);
     if (expensesJson == null) return [];
-
     final List<dynamic> decoded = jsonDecode(expensesJson);
     return decoded
         .map((e) => Expense.fromJson(e as Map<String, dynamic>))
@@ -27,7 +29,7 @@ class StorageService {
 
   Future<void> addExpense(Expense expense) async {
     final expenses = await getExpenses();
-    expenses.insert(0, expense); // Newest first
+    expenses.insert(0, expense);
     await saveExpenses(expenses);
   }
 
@@ -39,13 +41,12 @@ class StorageService {
 
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_keyExpenses);
+    await prefs.clear();
   }
 
   Future<bool> getThemeMode() async {
     final prefs = await SharedPreferences.getInstance();
-    final bool? isDark = prefs.getBool('is_dark_mode');
-    return isDark ?? false;
+    return prefs.getBool('is_dark_mode') ?? false;
   }
 
   Future<void> setThemeMode(bool isDark) async {
@@ -53,16 +54,45 @@ class StorageService {
     await prefs.setBool('is_dark_mode', isDark);
   }
 
-  Future<bool> isProfileSetup() async {
+  Future<bool> hasAccount() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_keyProfileSetup) ?? false;
+    return prefs.getString(_keyEmail) != null;
   }
 
-  Future<void> saveUserProfile(String name, double balance) async {
+  Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyIsLoggedIn) ?? false;
+  }
+
+  Future<void> setLoggedIn(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyIsLoggedIn, value);
+  }
+
+  Future<bool> login(String email, String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getString(_keyEmail) == email &&
+        prefs.getString(_keyPassword) == password) {
+      await setLoggedIn(true);
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> registerAndSetup(
+    String email,
+    String password,
+    String name,
+    double balance,
+    String currency,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyEmail, email);
+    await prefs.setString(_keyPassword, password);
     await prefs.setString(_keyUserName, name);
     await prefs.setDouble(_keyInitialBalance, balance);
-    await prefs.setBool(_keyProfileSetup, true);
+    await prefs.setString(_keyCurrency, currency);
+    await setLoggedIn(true);
   }
 
   Future<Map<String, dynamic>> getUserProfile() async {
@@ -70,6 +100,7 @@ class StorageService {
     return {
       'name': prefs.getString(_keyUserName) ?? 'User',
       'initialBalance': prefs.getDouble(_keyInitialBalance) ?? 0.0,
+      'currency': prefs.getString(_keyCurrency) ?? '\$',
     };
   }
 }
