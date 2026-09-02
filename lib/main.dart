@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/add_expense_screen.dart';
 import 'screens/settings_screen.dart';
@@ -36,7 +35,6 @@ class PocketLedgerApp extends StatelessWidget {
               secondary: const Color(0xFF059669),
               surface: Colors.white,
             ),
-            textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
             appBarTheme: const AppBarTheme(
               backgroundColor: Colors.transparent,
               elevation: 0,
@@ -59,7 +57,6 @@ class PocketLedgerApp extends StatelessWidget {
               secondary: const Color(0xFF10B981),
               surface: const Color(0xFF1E293B),
             ),
-            textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
             appBarTheme: const AppBarTheme(
               backgroundColor: Colors.transparent,
               elevation: 0,

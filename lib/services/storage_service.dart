@@ -4,10 +4,10 @@ import '../models/expense.dart';
 
 class StorageService {
   static const String _keyExpenses = 'expenses_list';
-  final SharedPreferencesAsync _prefs = SharedPreferencesAsync();
 
   Future<List<Expense>> getExpenses() async {
-    final String? expensesJson = await _prefs.getString(_keyExpenses);
+    final prefs = await SharedPreferences.getInstance();
+    final String? expensesJson = prefs.getString(_keyExpenses);
     if (expensesJson == null) return [];
 
     final List<dynamic> decoded = jsonDecode(expensesJson);
@@ -17,8 +17,9 @@ class StorageService {
   }
 
   Future<void> saveExpenses(List<Expense> expenses) async {
+    final prefs = await SharedPreferences.getInstance();
     final String encoded = jsonEncode(expenses.map((e) => e.toJson()).toList());
-    await _prefs.setString(_keyExpenses, encoded);
+    await prefs.setString(_keyExpenses, encoded);
   }
 
   Future<void> addExpense(Expense expense) async {
@@ -34,15 +35,18 @@ class StorageService {
   }
 
   Future<void> clearAll() async {
-    await _prefs.remove(_keyExpenses);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyExpenses);
   }
 
   Future<bool> getThemeMode() async {
-    final bool? isDark = await _prefs.getBool('is_dark_mode');
+    final prefs = await SharedPreferences.getInstance();
+    final bool? isDark = prefs.getBool('is_dark_mode');
     return isDark ?? false;
   }
 
   Future<void> setThemeMode(bool isDark) async {
-    await _prefs.setBool('is_dark_mode', isDark);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_dark_mode', isDark);
   }
 }
