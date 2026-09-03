@@ -34,8 +34,9 @@ class SettingsScreen extends StatelessWidget {
             subtitle: const Text('Securely end your session'),
             onTap: () async {
               await StorageService().setLoggedIn(false);
-              if (context.mounted)
+              if (context.mounted) {
                 Navigator.pushReplacementNamed(context, '/login');
+              }
             },
           ),
           const Divider(),
@@ -78,6 +79,11 @@ class SettingsScreen extends StatelessWidget {
     if (confirm == true && context.mounted) {
       await StorageService().clearAll();
       if (context.mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/welcome',
+          (route) => false,
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('All data cleared successfully')),
         );

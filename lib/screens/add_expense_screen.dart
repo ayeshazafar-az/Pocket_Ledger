@@ -108,8 +108,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           prefixIcon: const Icon(Icons.title),
                         ),
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty)
+                          if (value == null || value.trim().isEmpty) {
                             return 'Please enter a title';
+                          }
                           return null;
                         },
                       ),
@@ -136,11 +137,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           fontWeight: FontWeight.w700,
                         ),
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty)
+                          if (value == null || value.trim().isEmpty) {
                             return 'Please enter an amount';
+                          }
                           final amount = double.tryParse(value.trim());
-                          if (amount == null || amount <= 0)
+                          if (amount == null || amount <= 0) {
                             return 'Please enter a valid positive number';
+                          }
                           return null;
                         },
                       ),
@@ -154,7 +157,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: _selectedCategory,
+                        initialValue: _selectedCategory,
                         decoration: inputDecoration.copyWith(
                           prefixIcon: const Icon(Icons.category),
                         ),
@@ -167,8 +170,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             )
                             .toList(),
                         onChanged: (value) {
-                          if (value != null)
+                          if (value != null) {
                             setState(() => _selectedCategory = value);
+                          }
                         },
                       ),
                       const SizedBox(height: 48),

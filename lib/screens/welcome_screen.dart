@@ -148,7 +148,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               Expanded(
                                 flex: 2,
                                 child: DropdownButtonFormField<String>(
-                                  value: _selectedCurrency,
+                                  initialValue: _selectedCurrency,
                                   decoration: inputDecoration,
                                   items: _currencies
                                       .map(
@@ -164,8 +164,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                       )
                                       .toList(),
                                   onChanged: (val) {
-                                    if (val != null)
+                                    if (val != null) {
                                       setState(() => _selectedCurrency = val);
+                                    }
                                   },
                                 ),
                               ),
@@ -186,9 +187,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                     fontWeight: FontWeight.w700,
                                   ),
                                   validator: (v) {
-                                    if (v == null || v.isEmpty) return '*';
-                                    if (double.tryParse(v) == null)
+                                    if (v == null || v.isEmpty) {
+                                      return '*';
+                                    }
+                                    if (double.tryParse(v) == null) {
                                       return 'Invalid';
+                                    }
                                     return null;
                                   },
                                 ),
