@@ -21,6 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   SortOption _currentSort = SortOption.latest;
   String _userName = 'User';
   double _initialBalance = 0.0;
+  double _monthlyBudget = 0.0;
   String _currency = '\$';
 
   @override
@@ -43,10 +44,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final profile = await _storageService.getUserProfile();
 
+    final budget = await _storageService.getMonthlyBudget();
+
     setState(() {
       _expenses = expenses;
       _userName = profile['name'] as String;
       _initialBalance = profile['initialBalance'] as double;
+      _monthlyBudget = budget;
       _currency = profile['currency'] as String;
       _isLoading = false;
     });
@@ -70,6 +74,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: Text('Hello, $_userName', style: TextStyle(letterSpacing: -0.5)),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_awesome),
+            onPressed: () => Navigator.pushNamed(context, '/insights'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.subscriptions_outlined),
+            onPressed: () => Navigator.pushNamed(context, '/subscriptions'),
+          ),
           PopupMenuButton<SortOption>(
             icon: const Icon(Icons.tune),
             onSelected: (option) {
@@ -249,6 +261,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           letterSpacing: -1.5,
                         ),
                       ),
+                      if (_monthlyBudget > 0) ...[
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'MONTHLY BUDGET',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                            Text(
+                              '${(_totalSpent / _monthlyBudget * 100).toStringAsFixed(1)}%',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: LinearProgressIndicator(
+                            value: (_totalSpent / _monthlyBudget).clamp(
+                              0.0,
+                              1.0,
+                            ),
+                            minHeight: 8,
+                            backgroundColor: Colors.white.withAlpha(40),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              (_totalSpent / _monthlyBudget) > 0.9
+                                  ? const Color(0xFFFF3B30)
+                                  : const Color(0xFF34C759),
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 24),
                       Row(
                         children: [

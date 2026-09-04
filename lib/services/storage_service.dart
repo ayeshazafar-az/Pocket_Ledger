@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/expense.dart';
+import '../models/subscription.dart';
 
 class StorageService {
   static const String _keyExpenses = 'expenses_list';
@@ -10,6 +11,8 @@ class StorageService {
   static const String _keyEmail = 'auth_email';
   static const String _keyPassword = 'auth_password';
   static const String _keyIsLoggedIn = 'is_logged_in';
+  static const String _keyMonthlyBudget = 'monthly_budget';
+  static const String _keySubscriptions = 'subscriptions';
 
   Future<List<Expense>> getExpenses() async {
     final prefs = await SharedPreferences.getInstance();
@@ -37,6 +40,32 @@ class StorageService {
     final expenses = await getExpenses();
     expenses.removeWhere((e) => e.id == id);
     await saveExpenses(expenses);
+  }
+
+  Future<List<Subscription>> getSubscriptions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getStringList(_keySubscriptions) ?? [];
+    return data.map((e) => Subscription.fromJson(jsonDecode(e))).toList();
+  }
+
+  Future<void> addSubscription(Subscription sub) async {
+    final prefs = await SharedPreferences.getInstance();
+    final subs = await getSubscriptions();
+    subs.add(sub);
+    await prefs.setStringList(
+      _keySubscriptions,
+      subs.map((e) => jsonEncode(e.toJson())).toList(),
+    );
+  }
+
+  Future<void> deleteSubscription(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final subs = await getSubscriptions();
+    subs.removeWhere((item) => item.id == id);
+    await prefs.setStringList(
+      _keySubscriptions,
+      subs.map((e) => jsonEncode(e.toJson())).toList(),
+    );
   }
 
   Future<void> clearAll() async {
@@ -93,6 +122,16 @@ class StorageService {
     await prefs.setDouble(_keyInitialBalance, balance);
     await prefs.setString(_keyCurrency, currency);
     await setLoggedIn(true);
+  }
+
+  Future<double> getMonthlyBudget() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getDouble(_keyMonthlyBudget) ?? 0.0;
+  }
+
+  Future<void> setMonthlyBudget(double amount) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_keyMonthlyBudget, amount);
   }
 
   Future<Map<String, dynamic>> getUserProfile() async {

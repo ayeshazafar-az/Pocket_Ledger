@@ -23,6 +23,13 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(),
           ListTile(
+            leading: const Icon(Icons.track_changes),
+            title: const Text('Set Monthly Budget'),
+            subtitle: const Text('Track spending against a goal'),
+            onTap: () => _showBudgetDialog(context),
+          ),
+          const Divider(),
+          ListTile(
             leading: const Icon(Icons.logout, color: Colors.orange),
             title: const Text(
               'Logout',
@@ -52,6 +59,49 @@ class SettingsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _showBudgetDialog(BuildContext context) async {
+    final controller = TextEditingController();
+    final currentBudget = await StorageService().getMonthlyBudget();
+    if (currentBudget > 0) controller.text = currentBudget.toString();
+
+    if (!context.mounted) return;
+
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Monthly Budget'),
+        content: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            hintText: 'Enter limit (e.g. 5000)',
+            prefixIcon: Icon(Icons.track_changes),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final val = double.tryParse(controller.text.trim()) ?? 0.0;
+              StorageService().setMonthlyBudget(val);
+              Navigator.pop(context, true);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Budget updated successfully!')),
+      );
+    }
   }
 
   Future<void> _showClearConfirmation(BuildContext context) async {

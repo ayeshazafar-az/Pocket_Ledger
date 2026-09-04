@@ -4,6 +4,8 @@ import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/add_expense_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/insights_screen.dart';
+import 'screens/subscriptions_screen.dart';
 import 'services/storage_service.dart';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
@@ -100,6 +102,8 @@ class PocketLedgerApp extends StatelessWidget {
             '/dashboard': (context) => const DashboardScreen(),
             '/add': (context) => const AddExpenseScreen(),
             '/settings': (context) => const SettingsScreen(),
+            '/insights': (context) => const InsightsScreen(),
+            '/subscriptions': (context) => const SubscriptionsScreen(),
           },
         );
       },
