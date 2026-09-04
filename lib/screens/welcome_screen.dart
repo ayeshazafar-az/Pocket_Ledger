@@ -15,10 +15,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   final _balanceController = TextEditingController();
-  String _selectedCurrency = '\$';
+  String _selectedCurrency = 'Rs';
   bool _isSaving = false;
 
-  final List<String> _currencies = ['\$', '€', '£', '₹', '¥'];
+  final List<String> _currencies = ['Rs', 'PKR', '\$', '€', '£', '₹', '¥'];
 
   @override
   void dispose() {

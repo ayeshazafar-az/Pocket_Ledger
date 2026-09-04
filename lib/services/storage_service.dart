@@ -100,7 +100,7 @@ class StorageService {
     return {
       'name': prefs.getString(_keyUserName) ?? 'User',
       'initialBalance': prefs.getDouble(_keyInitialBalance) ?? 0.0,
-      'currency': prefs.getString(_keyCurrency) ?? '\$',
+      'currency': prefs.getString(_keyCurrency) ?? 'Rs',
     };
   }
 }
